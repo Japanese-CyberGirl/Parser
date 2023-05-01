@@ -1,0 +1,15 @@
+from bs4 import BeautifulSoup
+import requests
+
+
+url = 'https://vk.com/kyokutou_kanojo'
+main_list = requests.get(url)
+print(f"test: {main_list.status_code}")
+if main_list.status_code == 200:
+    print('status: OK')
+else:
+    print('status ERROR')
+
+soup = BeautifulSoup(main_list.text, "html.parser")
+print(soup)
+
