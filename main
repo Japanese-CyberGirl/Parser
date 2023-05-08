@@ -1,23 +1,54 @@
 from bs4 import BeautifulSoup
 import requests
 import time
+import telebot
 
+bot =  telebot.TeleBot('6056125043:AAHLBsKBMe9ygqG16rxRraqIRgfy0Iktxr0')
+
+activity_array = []
 url = 'https://vk.com/cybernetic_anime_girl'
 main_list = requests.get(url)
 print(f"test: {main_list.status_code}")
 if main_list.status_code == 200:
-    print('status: OK')
+    print('status: OK',"\n",'ALL SYSTEMS ARE NORMAL')
 else:
     print('status ERROR')
 print('\n')
 
-while  True:
-    url_work = 'https://vk.com/cybernetic_anime_girl'
-    main_list_work = requests.get(url_work)
-    data = BeautifulSoup(main_list_work.text, "html.parser")
-    string_data = str(data)
-    if (string_data.find("Online")) < 0:
-        print('Offline')
+
+
+# BOT OUTPUT PART
+@bot.message_handler(content_types=['text'])
+def get_text_messages(message):
+    counter = 1
+    fixed = 1
+    if message.text == "/start":
+        for i in range(0,86400,1):
+            url_work = 'https://vk.com/cybernetic_anime_girl'
+            main_list_work = requests.get(url_work)
+            data = BeautifulSoup(main_list_work.text, "html.parser")
+            string_data = str(data)
+            if (string_data.find("Online")) < 0:
+                activity_array.append(0)
+                counter += 1
+                if (counter > 2) and (activity_array[fixed]!=activity_array[fixed-1]):
+                    bot.send_message(message.from_user.id, "Offline")
+            else:
+                activity_array.append(1)
+                counter += 1
+                if (counter > 2) and (activity_array[fixed] != activity_array[fixed-1]):
+                    bot.send_message(message.from_user.id, "Online")
+            print(f'counter = {counter}')
+            print(f'array = {activity_array}')
+            print(f'length of the array  = {len(activity_array)}')
+            if counter>2:
+                print(f'fixed  ein = {activity_array[fixed]}')
+                print(f'previous zwei = {activity_array[fixed-1]}')
+                print(f'fixed = {fixed}')
+                fixed += 1
+            time.sleep(1)
     else:
-        print('Online')
-    time.sleep(1)
+        bot.send_message(message.from_user.id, "Простите, Господин, я Вас не могу понять... Напишите /start...")
+
+
+bot.polling(none_stop=True, interval=0)
