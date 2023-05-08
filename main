@@ -1,15 +1,23 @@
 from bs4 import BeautifulSoup
 import requests
+import time
 
-
-url = 'https://vk.com/kyokutou_kanojo'
+url = 'https://vk.com/cybernetic_anime_girl'
 main_list = requests.get(url)
 print(f"test: {main_list.status_code}")
 if main_list.status_code == 200:
     print('status: OK')
 else:
     print('status ERROR')
+print('\n')
 
-soup = BeautifulSoup(main_list.text, "html.parser")
-print(soup)
-
+while  True:
+    url_work = 'https://vk.com/cybernetic_anime_girl'
+    main_list_work = requests.get(url_work)
+    data = BeautifulSoup(main_list_work.text, "html.parser")
+    string_data = str(data)
+    if (string_data.find("Online")) < 0:
+        print('Offline')
+    else:
+        print('Online')
+    time.sleep(1)
