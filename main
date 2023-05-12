@@ -3,7 +3,7 @@ import requests
 import time
 import telebot
 
-bot =  telebot.TeleBot('6056125043:AAHLBsKBMe9ygqG16rxRraqIRgfy0Iktxr0')
+bot =  telebot.TeleBot('')
 
 activity_array = []
 url = 'https://vk.com/cybernetic_anime_girl'
