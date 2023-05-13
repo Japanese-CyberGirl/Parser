@@ -2,9 +2,11 @@ from bs4 import BeautifulSoup
 import requests
 import time
 import telebot
+from telebot import types # для указание типов
 
-bot =  telebot.TeleBot('')
+bot =  telebot.TeleBot('6056125043:AAHLBsKBMe9ygqG16rxRraqIRgfy0Iktxr0')
 
+# проверка работы бота с помощью странички создателя
 activity_array = []
 url = 'https://vk.com/cybernetic_anime_girl'
 main_list = requests.get(url)
@@ -18,37 +20,64 @@ print('\n')
 
 
 # BOT OUTPUT PART
+@bot.message_handler(commands=['start'])
+def start(message):
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    btn1 = types.KeyboardButton("Отследить онлайн странички")
+    btn2 = types.KeyboardButton("Задать вопрос создателю")
+    markup.add(btn1, btn2)
+    bot.send_message(message.chat.id,
+                     text="Здравствуйте, господин {0.first_name}! Я бот для отслеживания онлайна страниц пользователей ВК. "
+                          "\nМой создатель еще работает над моим усовершенствованием, но я уже кое-что умею! \n \nПожалуйста, выберите, что бы вы хотели?".format(
+                         message.from_user), reply_markup=markup)
+
 @bot.message_handler(content_types=['text'])
 def get_text_messages(message):
-    counter = 1
-    fixed = 1
-    if message.text == "/start":
-        for i in range(0,86400,1):
-            url_work = 'https://vk.com/cybernetic_anime_girl'
+    if message.text == "Отследить онлайн странички":
+        msg = bot.send_message(message.from_user.id, "Пожалуйста, введите ссылку на пользователя")
+        (bot.register_next_step_handler(msg,url_input))
+    else:
+        bot.send_message(message.from_user.id, "Простите, Господин, я Вас не могу понять... Напишите /start...")
+
+
+def url_input(message):
+    url_adress = message.text
+    #print(f"введенный пользователем текст: {url_adress}")
+    url_checking = str(url_adress)
+    if (url_checking.find("https://vk.com/")) < 0:
+        msg = bot.send_message(message.from_user.id,
+                            "Я не настолько глупая, господин! \n \nЭто не ссылка на пользователя ВК, пришлите мне правильную ссылку.")
+        (bot.register_next_step_handler(msg,url_input))
+    else:
+        bot.send_message(message.from_user.id, "Приказ поняла... начинаем слежку. \n \nКак только пользователь будет заходить и выходить из сети, я незамедлительно уведомлю вас об этом, господин!")
+        counter = 1
+        fixed = 1
+        for i in range(0, 86400, 1):
+            url_work = url_checking
             main_list_work = requests.get(url_work)
             data = BeautifulSoup(main_list_work.text, "html.parser")
             string_data = str(data)
             if (string_data.find("Online")) < 0:
                 activity_array.append(0)
                 counter += 1
-                if (counter > 2) and (activity_array[fixed]!=activity_array[fixed-1]):
-                    bot.send_message(message.from_user.id, "Offline")
+                if (counter > 2) and (activity_array[fixed] != activity_array[fixed - 1]):
+                    bot.send_message(message.from_user.id, f"Господин! Пользователь {url_checking} вышел из сети! \nПродолжаю наблюдение...")
             else:
                 activity_array.append(1)
                 counter += 1
-                if (counter > 2) and (activity_array[fixed] != activity_array[fixed-1]):
-                    bot.send_message(message.from_user.id, "Online")
+                if (counter > 2) and (activity_array[fixed] != activity_array[fixed - 1]):
+                    bot.send_message(message.from_user.id, f"Господин! Пользователь {url_checking} Зашел в сеть! \nПродолжаю наблюдение...")
             print(f'counter = {counter}')
             print(f'array = {activity_array}')
             print(f'length of the array  = {len(activity_array)}')
-            if counter>2:
-                print(f'fixed  ein = {activity_array[fixed]}')
-                print(f'previous zwei = {activity_array[fixed-1]}')
-                print(f'fixed = {fixed}')
+            if counter > 2:
+                #print(f'fixed  ein = {activity_array[fixed]}')
+                #print(f'previous zwei = {activity_array[fixed - 1]}')
+                #print(f'fixed = {fixed}')
                 fixed += 1
             time.sleep(1)
-    else:
-        bot.send_message(message.from_user.id, "Простите, Господин, я Вас не могу понять... Напишите /start...")
+
+
 
 
 bot.polling(none_stop=True, interval=0)
