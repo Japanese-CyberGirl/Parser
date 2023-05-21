@@ -1,0 +1,10 @@
+#
+import vk
+api = vk.API(access_token= '',
+             v='5.131')
+print(api.users.get(user_ids=1))
+print(api.users.get(user_ids=1))
+id = 233631832
+info = api.users.get(user_id=id, fields='online, last_seen')
+print(info)
+
