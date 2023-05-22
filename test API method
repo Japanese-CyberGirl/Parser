@@ -1,8 +1,7 @@
-#
+#vk1.a.Dsi2NNgByaiLQLd8dQGwabxq_gfHZp63gNGXBl1doVGQ4i70paQlnaNamSyd1KUzhSB8wmbJ4WcyA5wkV3u9FBYe9CdTK2PWg9gulQtgvtzlsSV7ij6Sjfj-tT82Fca4K_eEsxp8XlHySlsKtAsU63qdff57G3BBXPheFxsCq13J27K7GdBofWf_rF8MuqadnOetqqQtFLSwFHdVxikCzw
 import vk
-api = vk.API(access_token= '',
+api = vk.API(access_token= 'vk1.a.Dsi2NNgByaiLQLd8dQGwabxq_gfHZp63gNGXBl1doVGQ4i70paQlnaNamSyd1KUzhSB8wmbJ4WcyA5wkV3u9FBYe9CdTK2PWg9gulQtgvtzlsSV7ij6Sjfj-tT82Fca4K_eEsxp8XlHySlsKtAsU63qdff57G3BBXPheFxsCq13J27K7GdBofWf_rF8MuqadnOetqqQtFLSwFHdVxikCzw',
              v='5.131')
-print(api.users.get(user_ids=1))
 print(api.users.get(user_ids=1))
 id = 233631832
 info = api.users.get(user_id=id, fields='online, last_seen')
