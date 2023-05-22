@@ -1,0 +1,87 @@
+from selenium import webdriver
+import time
+from selenium.webdriver.chrome.options import Options
+import telebot
+import vk
+from telebot import types # для указание типов
+
+#vk1.a.56nFPdcp8SNkiU80dR8ByXFxwRedQrJlaPQqYau0qLDcF29AmQH-JOP6zCbZYCQ0xTOWXqC05zhjJe5-MXFCZ8cuUkhdG5iHlikMsftNSigG9xAo0w95AEJ0yEkR_1G3KPeJHnvOCXkCiHmOsKBPPzxTLdpWJb5cpeXJ6-akfISxyu5odexhDWMpsMnwvW5X2frCGA19m8c-t5rFs60qSA
+activity_array = []
+bot =  telebot.TeleBot('6056125043:AAHLBsKBMe9ygqG16rxRraqIRgfy0Iktxr0')
+
+api = vk.API(access_token= 'vk1.a.56nFPdcp8SNkiU80dR8ByXFxwRedQrJlaPQqYau0qLDcF29AmQH-JOP6zCbZYCQ0xTOWXqC05zhjJe5-MXFCZ8cuUkhdG5iHlikMsftNSigG9xAo0w95AEJ0yEkR_1G3KPeJHnvOCXkCiHmOsKBPPzxTLdpWJb5cpeXJ6-akfISxyu5odexhDWMpsMnwvW5X2frCGA19m8c-t5rFs60qSA',
+             v='5.131')
+
+chrome_options = Options()
+chrome_options.add_argument("--headless")
+driver = webdriver.Chrome(options=chrome_options)
+
+
+# BOT OUTPUT PART
+@bot.message_handler(commands=['start'])
+def start(message):
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    btn1 = types.KeyboardButton("Отследить онлайн странички")
+    btn2 = types.KeyboardButton("Задать вопрос создателю")
+    markup.add(btn1, btn2)
+    bot.send_message(message.chat.id,
+                     text="Здравствуйте, господин {0.first_name}! Я бот для отслеживания онлайна страниц пользователей ВК. "
+                          "\nМой создатель еще работает над моим усовершенствованием, но я уже кое-что умею! \n \nПожалуйста, выберите, что бы вы хотели?".format(
+                         message.from_user), reply_markup=markup)
+
+@bot.message_handler(content_types=['text'])
+def get_text_messages(message):
+    if message.text == "Отследить онлайн странички":
+        msg = bot.send_message(message.from_user.id, "Пожалуйста, введите ссылку на пользователя")
+        (bot.register_next_step_handler(msg,url_input))
+    else:
+        bot.send_message(message.from_user.id, "Простите, Господин, я Вас не могу понять... Напишите /start...")
+
+
+def url_input(message):
+    url_adress = message.text
+    #print(f"введенный пользователем текст: {url_adress}")
+    url_checking = str(url_adress)
+    if (url_checking.find("https://vk.com/")) < 0:
+        msg = bot.send_message(message.from_user.id,
+                            "Я не настолько глупая, господин! \n \nЭто не ссылка на пользователя ВК, пришлите мне правильную ссылку.")
+        (bot.register_next_step_handler(msg,url_input))
+    else:
+        bot.send_message(message.from_user.id, "Приказ поняла... начинаем слежку. \n \nКак только пользователь будет заходить и выходить из сети, я незамедлительно уведомлю вас об этом, господин!")
+        counter = 1
+        fixed = 1
+        link = url_checking
+        driver.get(link)
+        time.sleep(5)
+        html_source = driver.page_source
+        item1, item2 = html_source.split("php?id=")
+        item3, item4 = item2.split('><link rel="alternate" media="only screen and')
+        item3 = item3[:-1]
+        id = int(item3)
+
+
+        for i in range(0, 86400, 1):
+            info = api.users.get(user_id=id, fields='online, last_seen')
+            string_data = str(info)
+            if (string_data.find("online: 1")) < 0:
+                activity_array.append(0)
+                counter += 1
+                if (counter > 2) and (activity_array[fixed] != activity_array[fixed - 1]):
+                    bot.send_message(message.from_user.id, f"Господин! Пользователь {url_checking} вышел из сети! \nПродолжаю наблюдение...")
+            else:
+                activity_array.append(1)
+                counter += 1
+                if (counter > 2) and (activity_array[fixed] != activity_array[fixed - 1]):
+                    bot.send_message(message.from_user.id, f"Господин! Пользователь {url_checking} Зашел в сеть! \nПродолжаю наблюдение...")
+            print(f'counter = {counter}')
+            print(f'array = {activity_array}')
+            print(f'length of the array  = {len(activity_array)}')
+            if counter > 2:
+                fixed += 1
+            time.sleep(1)
+
+
+
+
+bot.polling(none_stop=True, interval=0)
+
