@@ -8,7 +8,7 @@ from telebot import types # для указание типов
 activity_array = []
 bot =  telebot.TeleBot('6056125043:AAHLBsKBMe9ygqG16rxRraqIRgfy0Iktxr0')
 
-api = vk.API(access_token= 'vk1.a.I7IN_auRziLTEtuuoDZyPuUg7Cx4FjaDIk_Toziq-zvIJniQOQglETyWTw75ypRIVI_uzvfdNHJcWXRlyfe83YeXx0LO6CrBzU-tkauil3iF8VVUercmiv6QcsQ1vfGDi776RbRwhC2QP52vgv8pQn-pa_19_VJmZb8yKNExCwshZo6pIQaMtby4uexXLV7MGWIeItVHeQBF4Xw6Qz49SQ',
+api = vk.API(access_token= 'vk1.a.C9cYSjPzovttvzT4mvXCalczHiYor-7qUVWs4lCEjXtRtxk-cgeUVNZA80i2D7g67M5wwoCyi10i42EjvjFo7VAwbVk-xPvJz8-27EEjD2Bq1TA4x62l0vDeU6ZEgORGNuxDHdZKxCSnV5k5hz6g4-vSze0mHDWFyMRLM2YXAadLa5KA61GaAUNfLAMjgh9YfTzYfQZJjAzn_baySi8MUA',
              v='5.131')
 
 chrome_options = Options()
@@ -18,6 +18,7 @@ driver = webdriver.Chrome(options=chrome_options)
 
 # BOT OUTPUT PART
 #reply_markup=types.ReplyKeyboardRemove()
+#создание кнопок
 @bot.message_handler(commands=['start'])
 def start(message):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -38,8 +39,9 @@ checker = 0
 nach = 0
 global se
 se = 0
+#переменные для того, чтобы кнопки друг с другом не конфликтовали
 @bot.message_handler(content_types=['text'])
-def get_text_messages(message):
+def get_text_messages(message): #ну это понятная базовая функция, даже нечего обсуждать, приемка сообщений чисто
     global checker
     global nach
     global se
@@ -51,7 +53,7 @@ def get_text_messages(message):
         bot.send_message(message.from_user.id, "Уже ведется отслеживание странички, господин.")
         checker = 1
     if message.text == "Задать вопрос создателю":
-        msg = bot.send_message(message.from_user.id, "Если у вас возникли вопросы к прекрасному Создателю прекрасной меня, то пишите: @Cybernteic_Anime_Girl")
+        msg = bot.send_message(message.from_user.id, "Если у вас возникли вопросы к прекрасному Создателю прекрасной меня, то пишите: @Cyberneteic_Anime_Girl")
         checker = 1
         (bot.register_next_step_handler(msg,get_text_messages))
     if message.text == "Отменить слежку" and nach>0:
@@ -66,6 +68,7 @@ def get_text_messages(message):
 
 
 def url_input(message):
+    #а это уже поиск непосредственной активности пользователя
     global stop
     global checker
     global se
@@ -87,6 +90,8 @@ def url_input(message):
         else:
             bot.send_message(message.from_user.id,
                              "Приказ поняла... начинаем слежку. \n \nКак только пользователь будет заходить и выходить из сети, я незамедлительно уведомлю вас об этом, господин!")
+            #после получения и подтверждения того, что полученная ссылка - адрес страницы вк, делаем запрос через селниум, парсерим страницу один раз
+            #и получаем id пользователя, с ним уже ведем дальнейшую работу, делая запросы к API ВКонтакте
             checker = 1
             counter = 1
             fixed = 1
@@ -100,7 +105,8 @@ def url_input(message):
             id = int(item3)
             global nach
 
-            for i in range(0, 43200, 1):
+            for i in range(0, 43200, 1): #вот и сами запросы, повторяющиеся в течение 12 часов. Если нажмут на кнопку отмены, то следующее условие
+                #остановит работу слежки и все можно будет начать заново
                 if stop > 0:
                     se = 0
                     break
