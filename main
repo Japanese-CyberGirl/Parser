@@ -6,9 +6,9 @@ import vk
 from telebot import types # для указание типов
 
 activity_array = []
-bot =  telebot.TeleBot('')
+bot =  telebot.TeleBot('6056125043:AAHLBsKBMe9ygqG16rxRraqIRgfy0Iktxr0')
 
-api = vk.API(access_token= '',
+api = vk.API(access_token= 'vk1.a.I7IN_auRziLTEtuuoDZyPuUg7Cx4FjaDIk_Toziq-zvIJniQOQglETyWTw75ypRIVI_uzvfdNHJcWXRlyfe83YeXx0LO6CrBzU-tkauil3iF8VVUercmiv6QcsQ1vfGDi776RbRwhC2QP52vgv8pQn-pa_19_VJmZb8yKNExCwshZo6pIQaMtby4uexXLV7MGWIeItVHeQBF4Xw6Qz49SQ',
              v='5.131')
 
 chrome_options = Options()
@@ -17,74 +17,120 @@ driver = webdriver.Chrome(options=chrome_options)
 
 
 # BOT OUTPUT PART
+#reply_markup=types.ReplyKeyboardRemove()
 @bot.message_handler(commands=['start'])
 def start(message):
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
     btn1 = types.KeyboardButton("Отследить онлайн странички")
     btn3 = types.KeyboardButton("Задать вопрос создателю")
     btn2 = types.KeyboardButton("/start")
-    markup.add(btn1, btn2, btn3)
+    btn4 = types.KeyboardButton("Отменить слежку")
+    btn5 = types.KeyboardButton("Главное меню")
+    markup.add(btn1, btn2, btn3, btn4, btn5)
     bot.send_message(message.chat.id,
                      text="Здравствуйте, господин {0.first_name}! Я бот для отслеживания онлайна страниц пользователей ВК. "
                           "\nМой создатель еще работает над моим усовершенствованием, но я уже кое-что умею! \n \nПожалуйста, выберите, что бы вы хотели?".format(
                          message.from_user), reply_markup=markup)
-
+global stop
+stop = 0
+global shecker
+checker = 0
+nach = 0
+global se
+se = 0
 @bot.message_handler(content_types=['text'])
 def get_text_messages(message):
-    if message.text == "Отследить онлайн странички":
+    global checker
+    global nach
+    global se
+    if message.text == "Отследить онлайн странички" and se<1:
+        checker = 1
         msg = bot.send_message(message.from_user.id, "Пожалуйста, введите ссылку на пользователя")
         (bot.register_next_step_handler(msg,url_input))
+    elif se == 1:
+        bot.send_message(message.from_user.id, "Уже ведется отслеживание странички, господин.")
+        checker = 1
     if message.text == "Задать вопрос создателю":
         msg = bot.send_message(message.from_user.id, "Если у вас возникли вопросы к прекрасному Создателю прекрасной меня, то пишите: @Cybernteic_Anime_Girl")
-        (bot.register_next_step_handler(msg,url_input))
-    else:
+        checker = 1
+        (bot.register_next_step_handler(msg,get_text_messages))
+    if message.text == "Отменить слежку" and nach>0:
+        msg = bot.send_message(message.from_user.id, "Слежка прекращена, господин")
+        global stop
+        stop = 1
+        (bot.register_next_step_handler(msg, get_text_messages))
+        checker = 1
+    elif checker<1:
         bot.send_message(message.from_user.id, "Простите, Господин, я Вас не могу понять... Напишите /start...")
+    checker = 0
 
 
 def url_input(message):
+    global stop
+    global checker
+    global se
+    se = 1
     url_adress = message.text
     #print(f"введенный пользователем текст: {url_adress}")
     url_checking = str(url_adress)
-    if (url_checking.find("https://vk.com/")) < 0:
-        msg = bot.send_message(message.from_user.id,
-                            "Я не настолько глупая, господин! \n \nЭто не ссылка на пользователя ВК, пришлите мне правильную ссылку.")
-        (bot.register_next_step_handler(msg,url_input))
+    if url_checking == "Главное меню":
+        msg = bot.send_message(message.from_user.id, "Возвращаемся в главное меню")
+        (bot.register_next_step_handler(msg, get_text_messages))
+        checker = 0
+        se = 0
     else:
-        bot.send_message(message.from_user.id, "Приказ поняла... начинаем слежку. \n \nКак только пользователь будет заходить и выходить из сети, я незамедлительно уведомлю вас об этом, господин!")
-        counter = 1
-        fixed = 1
-        link = url_checking
-        driver.get(link)
-        time.sleep(5)
-        html_source = driver.page_source
-        item1, item2 = html_source.split("php?id=")
-        item3, item4 = item2.split('><link rel="alternate" media="only screen and')
-        item3 = item3[:-1]
-        id = int(item3)
+        if (url_checking.find("https://vk.com/")) < 0:
+            msg = bot.send_message(message.from_user.id,
+                                   "Я не настолько глупая, господин! \n \nЭто не ссылка на пользователя ВК, пришлите мне правильную ссылку.")
+            checker = 1
+            (bot.register_next_step_handler(msg, url_input))
+        else:
+            bot.send_message(message.from_user.id,
+                             "Приказ поняла... начинаем слежку. \n \nКак только пользователь будет заходить и выходить из сети, я незамедлительно уведомлю вас об этом, господин!")
+            checker = 1
+            counter = 1
+            fixed = 1
+            link = url_checking
+            driver.get(link)
+            time.sleep(5)
+            html_source = driver.page_source
+            item1, item2 = html_source.split("php?id=")
+            item3, item4 = item2.split('><link rel="alternate" media="only screen and')
+            item3 = item3[:-1]
+            id = int(item3)
+            global nach
+
+            for i in range(0, 43200, 1):
+                if stop > 0:
+                    se = 0
+                    break
+                nach = 1
+                info = api.users.get(user_id=id, fields='online, last_seen')
+                string_data = str(info)
+                if (string_data.find("'online': 1")) < 0:
+                    activity_array.append(0)
+                    counter += 1
+                    if (counter > 2) and (activity_array[fixed] != activity_array[fixed - 1]):
+                        bot.send_message(message.from_user.id,
+                                         f"Господин! Пользователь {url_checking} вышел из сети! \nПродолжаю наблюдение...")
+                else:
+                    activity_array.append(1)
+                    counter += 1
+                    if (counter > 2) and (activity_array[fixed] != activity_array[fixed - 1]):
+                        bot.send_message(message.from_user.id,
+                                         f"Господин! Пользователь {url_checking} Зашел в сеть! \nПродолжаю наблюдение...")
+                print(f'counter = {counter}')
+                print(f'array = {activity_array}')
+                print(f'length of the array  = {len(activity_array)}')
+                if counter > 2:
+                    fixed += 1
+                time.sleep(1)
+            if stop < 0:
+                bot.send_message(message.from_user.id,
+                                 "Господин, время моей работы прошло, для повторного запуска слежки, перезапустите программу.")
+            stop = 0
 
 
-        for i in range(0, 86400, 1):
-            info = api.users.get(user_id=id, fields='online, last_seen')
-            string_data = str(info)
-            if (string_data.find("'online': 1")) < 0:
-                activity_array.append(0)
-                counter += 1
-                if (counter > 2) and (activity_array[fixed] != activity_array[fixed - 1]):
-                    bot.send_message(message.from_user.id, f"Господин! Пользователь {url_checking} вышел из сети! \nПродолжаю наблюдение...")
-            else:
-                activity_array.append(1)
-                counter += 1
-                if (counter > 2) and (activity_array[fixed] != activity_array[fixed - 1]):
-                    bot.send_message(message.from_user.id, f"Господин! Пользователь {url_checking} Зашел в сеть! \nПродолжаю наблюдение...")
-            print(f'counter = {counter}')
-            print(f'array = {activity_array}')
-            print(f'length of the array  = {len(activity_array)}')
-            if counter > 2:
-                fixed += 1
-            time.sleep(1)
-
-        bot.send_message(message.from_user.id,
-                         "Господин, время моей работы прошло, для повторного запуска слежки, перезапустите программу.")
 
 bot.polling(none_stop=True, interval=0)
 
